@@ -1,0 +1,1095 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl" class="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Terra Voxel Craftsmanship - AI Agent Knowledge Base</title>
+    
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- Google Fonts for Pixel Art & Modern UI -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=Silkscreen:wght@400;700&family=Tajawal:wght@400;700;900&display=swap" rel="stylesheet">
+    
+    <!-- FontAwesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: {
+                        craft: {
+                            dirt: '#866043',
+                            dirtDark: '#573d26',
+                            grass: '#5c8e32',
+                            grassDark: '#3b5e1e',
+                            stone: '#737373',
+                            stoneDark: '#404040',
+                            bedrock: '#1a1a1a',
+                            diamond: '#4dedf3',
+                            gold: '#fdb813',
+                            wood: '#9c6f44',
+                            woodDark: '#674625',
+                        }
+                    },
+                    fontFamily: {
+                        pixel: ['"Press Start 2P"', 'cursive'],
+                        silkscreen: ['Silkscreen', 'sans-serif'],
+                        arabic: ['Tajawal', 'sans-serif'],
+                    }
+                }
+            }
+        }
+    </script>
+
+    <style>
+        /* Custom Minecraft Pixel Styling */
+        body {
+            font-family: 'Tajawal', sans-serif;
+            image-rendering: pixelated;
+        }
+
+        .pixel-font {
+            font-family: 'Press Start 2P', 'Tajawal', cursive;
+        }
+
+        .pixel-border-sm {
+            box-shadow: 
+                -3px 0 0 0 #000,
+                3px 0 0 0 #000,
+                0 -3px 0 0 #000,
+                0 3px 0 0 #000;
+        }
+
+        .pixel-border-md {
+            box-shadow: 
+                -4px 0 0 0 #000,
+                4px 0 0 0 #000,
+                0 -4px 0 0 #000,
+                0 4px 0 0 #000,
+                -4px -4px 0 0 #000,
+                4px -4px 0 0 #000,
+                -4px 4px 0 0 #000,
+                4px 4px 0 0 #000;
+        }
+
+        .pixel-btn {
+            position: relative;
+            transition: all 0.1s ease;
+            box-shadow: inset -4px -4px 0px 0px rgba(0,0,0,0.4), inset 4px 4px 0px 0px rgba(255,255,255,0.3), -4px 0 0 0 #000, 4px 0 0 0 #000, 0 -4px 0 0 #000, 0 4px 0 0 #000;
+        }
+
+        .pixel-btn:active {
+            box-shadow: inset 4px 4px 0px 0px rgba(0,0,0,0.5), -4px 0 0 0 #000, 4px 0 0 0 #000, 0 -4px 0 0 #000, 0 4px 0 0 #000;
+            transform: translateY(2px);
+        }
+
+        /* Crafting Table Grid Pattern */
+        .crafting-bg-light {
+            background-color: #c6c6c6;
+            background-image: 
+                linear-gradient(45deg, #b0b0b0 25%, transparent 25%), 
+                linear-gradient(-45deg, #b0b0b0 25%, transparent 25%), 
+                linear-gradient(45deg, transparent 75%, #b0b0b0 75%), 
+                linear-gradient(-45deg, transparent 75%, #b0b0b0 75%);
+            background-size: 20px 20px;
+            background-position: 0 0, 0 10px, 10px -10px, -10px 0px;
+        }
+
+        .crafting-bg-dark {
+            background-color: #262626;
+            background-image: 
+                linear-gradient(45deg, #1f1f1f 25%, transparent 25%), 
+                linear-gradient(-45deg, #1f1f1f 25%, transparent 25%), 
+                linear-gradient(45deg, transparent 75%, #1f1f1f 75%), 
+                linear-gradient(-45deg, transparent 75%, #1f1f1f 75%);
+            background-size: 24px 24px;
+            background-position: 0 0, 0 12px, 12px -12px, -12px 0px;
+        }
+
+        /* Custom Scrollbar */
+        ::-webkit-scrollbar {
+            width: 12px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #2b2b2b;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #5c8e32;
+            border: 2px solid #000;
+        }
+
+        .accordion-content {
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height 0.3s ease-out, opacity 0.2s ease;
+            opacity: 0;
+        }
+
+        .accordion-content.expanded {
+            max-height: 500px;
+            opacity: 1;
+        }
+
+        /* Loading Screen Progress Animation */
+        @keyframes loadingProgress {
+            0% { width: 0%; }
+            50% { width: 65%; }
+            100% { width: 100%; }
+        }
+        .pixel-progress-bar {
+            animation: loadingProgress 2s ease-in-out forwards;
+        }
+    </style>
+</head>
+<body class="bg-craft-stoneDark dark:bg-craft-bedrock text-stone-900 dark:text-stone-100 min-h-screen transition-colors duration-300 antialiased pb-16">
+
+    <!-- Minecraft Style Loading Screen -->
+    <div id="loadingScreen" class="fixed inset-0 z-[100] bg-craft-bedrock crafting-bg-dark flex flex-col items-center justify-center p-6 transition-opacity duration-500">
+        <div class="text-center max-w-md w-full">
+            <div class="w-16 h-16 mx-auto mb-6 bg-craft-grass border-4 border-black flex items-center justify-center text-yellow-300 animate-bounce">
+                <i class="fa-solid fa-cube text-3xl"></i>
+            </div>
+            <h2 class="pixel-font text-yellow-400 text-sm sm:text-base mb-2 uppercase tracking-widest drop-shadow-[2px_2px_0_#000]" id="loadingTitle">
+                Building Voxel World...
+            </h2>
+            <p class="text-xs font-mono text-stone-400 mb-6" id="loadingSubtitle">
+                توليد البيانات وتجهيز الأسئلة...
+            </p>
+            
+            <!-- Pixelated Progress Bar Container -->
+            <div class="w-full bg-stone-900 border-4 border-black p-1">
+                <div class="h-6 bg-craft-grass border-2 border-black pixel-progress-bar"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Top Pixel Banner & Controls -->
+    <header class="sticky top-0 z-50 bg-craft-dirt dark:bg-stone-900 border-b-4 border-black shadow-2xl py-4 px-4 sm:px-8">
+        <div class="max-w-6xl mx-auto flex flex-col md:flex-row items-center justify-between gap-4">
+            
+            <!-- Branding -->
+            <div class="flex items-center gap-3">
+                <div class="w-10 h-10 bg-craft-grass border-2 border-black flex items-center justify-center text-white font-bold shadow-md">
+                    <i class="fa-solid font-bold fa-cube text-xl text-yellow-300"></i>
+                </div>
+                <div>
+                    <h1 class="pixel-font text-xs sm:text-sm md:text-base text-yellow-400 font-black tracking-wider uppercase drop-shadow-[2px_2px_0_#000]">
+                        Terra Voxel Craftsmanship
+                    </h1>
+                    <p class="text-xs text-stone-200 font-semibold tracking-wide" id="subHeading">
+                        موسوعة مهارات وهندسة وكلاء الذكاء الاصطناعي
+                    </p>
+                </div>
+            </div>
+
+            <!-- Global Action Controls -->
+            <div class="flex items-center gap-3">
+                
+                <!-- Expand/Collapse All -->
+                <button id="toggleAllBtn" onclick="playClickSound(); toggleAllExplanations();" class="pixel-btn bg-craft-stone text-white font-bold py-2 px-3 text-xs flex items-center gap-2 hover:bg-stone-600">
+                    <i class="fa-solid fa-folder-open text-yellow-300"></i>
+                    <span id="toggleAllText">فتح جميع الشروحات</span>
+                </button>
+
+                <!-- Language Toggle Button -->
+                <button id="langToggleBtn" onclick="playClickSound(); toggleLanguage();" class="pixel-btn bg-craft-wood text-white font-bold py-2 px-3 text-xs flex items-center gap-2 hover:bg-craft-woodDark">
+                    <i class="fa-solid fa-globe text-cyan-300"></i>
+                    <span id="langText">English</span>
+                </button>
+
+                <!-- Dark/Light Theme Toggle -->
+                <button onclick="playClickSound(); toggleTheme();" class="pixel-btn bg-craft-grass dark:bg-craft-dirt text-white font-bold py-2 px-3 text-xs flex items-center gap-2 hover:opacity-90">
+                    <i id="themeIcon" class="fa-solid fa-moon text-yellow-200"></i>
+                    <span id="themeText">Dark</span>
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Container -->
+    <main class="max-w-5xl mx-auto px-4 mt-8">
+        
+        <!-- Welcome Voxel Panel -->
+        <div class="bg-craft-dirt dark:bg-stone-900 pixel-border-md p-6 mb-8 text-white relative overflow-hidden">
+            <div class="absolute -left-10 -bottom-10 opacity-10 text-9xl pointer-events-none">
+                <i class="fa-solid fa-boxes-stacked"></i>
+            </div>
+            <div class="relative z-10">
+                <div class="flex items-center gap-2 mb-2">
+                    <span class="bg-green-600 text-white text-xs px-2 py-1 font-mono uppercase tracking-widest border border-black" id="statusBadge">إنجاز الورشة</span>
+                    <span class="bg-yellow-600 text-black text-xs px-2 py-1 font-mono font-bold border border-black" id="countBadge">20 سؤال تفاعلي</span>
+                </div>
+                <h2 class="text-xl sm:text-2xl font-black text-yellow-300 mb-2" id="mainTitle">دليل اختبار وتصميم وكلاء الذكاء الاصطناعي (AI Agents)</h2>
+                <p class="text-sm text-stone-200 leading-relaxed max-w-3xl" id="mainDesc">
+                    تصفح الأسئلة الـ 20 بالترتيب الصحيح مع الإجابات النموذجية الشاملة. يمكنك النقر على خيار "الشرح +" لعرض المفهوم التوضيحي بالتفصيل!
+                </p>
+            </div>
+        </div>
+
+        <!-- Quiz List Container -->
+        <div id="questionsContainer" class="space-y-6">
+            <!-- Rendered Dynmically via JS -->
+        </div>
+    </main>
+
+    <!-- Footer Block -->
+    <footer class="mt-16 text-center text-xs text-stone-300 font-mono py-8 border-t-4 border-black bg-craft-dirt dark:bg-stone-900">
+        <div class="max-w-4xl mx-auto px-4 flex flex-col items-center justify-center gap-3">
+            <div class="flex items-center gap-2 text-yellow-400 font-bold pixel-font text-xs">
+                <i class="fa-solid fa-pickaxe text-amber-500"></i>
+                <span id="footerCraftText">صُنع بعناية وإتقان بواسطة عبدالله محمد أحمد المناعمه ⛏️</span>
+            </div>
+            <p class="text-stone-400 text-[11px]" id="footerSubText">
+                Terra Voxel Craftsmanship © 2026 | AI Agent Engineering Workshop Codex
+            </p>
+        </div>
+    </footer>
+
+    <!-- JavaScript Application Logic -->
+    <script>
+        // Web Audio API Synthesizer for Minecraft-style 8-bit sound effects
+        const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+
+        function playClickSound() {
+            if (audioCtx.state === 'suspended') {
+                audioCtx.resume();
+            }
+            const osc = audioCtx.createOscillator();
+            const gain = audioCtx.createGain();
+
+            osc.type = 'triangle';
+            osc.frequency.setValueAtTime(320, audioCtx.currentTime);
+            osc.frequency.exponentialRampToValueAtTime(120, audioCtx.currentTime + 0.08);
+
+            gain.gain.setValueAtTime(0.3, audioCtx.currentTime);
+            gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.08);
+
+            osc.connect(gain);
+            gain.connect(audioCtx.destination);
+
+            osc.start();
+            osc.stop(audioCtx.currentTime + 0.08);
+        }
+
+        function playToggleSound(opening) {
+            if (audioCtx.state === 'suspended') {
+                audioCtx.resume();
+            }
+            const osc = audioCtx.createOscillator();
+            const gain = audioCtx.createGain();
+
+            osc.type = 'square';
+            const startFreq = opening ? 240 : 400;
+            const endFreq = opening ? 480 : 200;
+
+            osc.frequency.setValueAtTime(startFreq, audioCtx.currentTime);
+            osc.frequency.exponentialRampToValueAtTime(endFreq, audioCtx.currentTime + 0.1);
+
+            gain.gain.setValueAtTime(0.15, audioCtx.currentTime);
+            gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.1);
+
+            osc.connect(gain);
+            gain.connect(audioCtx.destination);
+
+            osc.start();
+            osc.stop(audioCtx.currentTime + 0.1);
+        }
+
+        // Quiz Data Array - Ordered strictly from Q1 to Q20
+        const quizData = [
+            {
+                id: 1,
+                title: {
+                    ar: "ما الفرق الجوهري بين المساعد الذكي (روبوت المحادثة) ووكيل الذكاء الاصطناعي؟",
+                    en: "What is the fundamental difference between a Smart Assistant (Chatbot) and an AI Agent?"
+                },
+                options: {
+                    ar: [
+                        "أ) المساعد الذكي أحدث من الوكيل",
+                        "ب) المساعد يجيب عن الأسئلة فقط، أما الوكيل فيخطط ويتخذ القرار ويستخدم الأدوات لإنجاز المهمة",
+                        "ج) الوكيل لا يحتاج إلى نموذج لغوي",
+                        "د) لا فرق بينهما إلا في الاسم"
+                    ],
+                    en: [
+                        "A) Smart assistant is newer than an agent",
+                        "B) Assistant only answers questions, while an Agent plans, makes decisions, and uses tools to accomplish tasks",
+                        "C) Agent does not require a Language Model",
+                        "D) No difference except the name"
+                    ]
+                },
+                correctIndex: 1,
+                explanation: {
+                    ar: "الفارق الجوهري يكمن في الاستقلالية والقدرة على التنفيذ (Agency & Execution)؛ فالمساعد الذكي (Chatbot) يعتمد بالأساس على النمط التفاعلي البسيط (سؤال وجواب) لإنتاج النصوص والمعلومات، بينما يمتلك وكيل الذكاء الاصطناعي (AI Agent) استقلالية أكبر تمكنه من تقسيم الهدف إلى خطوات، والتخطيط، واستخدام الأدوات الخارجية (APIs/MCP)، والعمل ضمن حلقة تكرارية لاتخاذ القرارات وإنجاز المهام المعقدة بشكل آلي.",
+                    en: "The core difference lies in autonomy and execution (Agency & Execution). A Chatbot relies on basic Q&A interaction to generate text, whereas an AI Agent breaks goals into actionable steps, plans, uses external tools (APIs/MCP), and operates in loops to complete complex tasks autonomously."
+                },
+                topic: {
+                    ar: "مفهوم الوكيل الذكي (AI Agent vs Chatbot)",
+                    en: "AI Agent vs Chatbot Core Concept"
+                }
+            },
+            {
+                id: 2,
+                title: {
+                    ar: "أيّ من المصطلحات التالية يُعبّر عن «نسخة رقمية تمثلك أو تمثل موظفًا في المؤسسة»؟",
+                    en: "Which term represents a 'digital replica representing yourself or an employee in an organization'?"
+                },
+                options: {
+                    ar: [
+                        "أ) التوأم الرقمي (Digital Twin)",
+                        "ب) الذكاء الاصطناعي الخفي (Shadow AI)",
+                        "ج) الحاكم والمشرع (AI Governance)",
+                        "د) الغباء الاصطناعي (Artificial Stupidity)"
+                    ],
+                    en: [
+                        "A) Digital Twin",
+                        "B) Shadow AI",
+                        "C) AI Governance",
+                        "D) Artificial Stupidity"
+                    ]
+                },
+                correctIndex: 0,
+                explanation: {
+                    ar: "التوأم الرقمي (Digital Twin) هو نموذج أو وكيل افتراضي رقمي يُصمم لتمثيل شخص أو موظف أو نظام بدقة، بحيث يحاكي أسلوبه، ومهاراته، وسلوكه في اتخاذ القرارات أو تنفيذ الأنشطة والمهام المختلفة.",
+                    en: "A Digital Twin is a digital counterpart/agent modeled to replicate a person's expert knowledge, decision-making style, and capabilities within a system."
+                },
+                topic: {
+                    ar: "مفهوم التوأم الرقمي (Digital Twin)",
+                    en: "Digital Twin Concept"
+                }
+            },
+            {
+                id: 3,
+                title: {
+                    ar: "ما المقصود بـ«Shadow AI»؟",
+                    en: "What does 'Shadow AI' mean?"
+                },
+                options: {
+                    ar: [
+                        "أ) استخدام نماذج الذكاء الاصطناعي للتصوير في الظلام",
+                        "ب) الاستخدام غير المصرح به أو غير المراقب لأدوات الذكاء الاصطناعي من قبل الموظفين داخل المنظمة",
+                        "ج) وكيل ذكي لا يظهر على الشاشة",
+                        "د) برنامج حماية من الفيروسات"
+                    ],
+                    en: [
+                        "A) Using AI models in dark mode",
+                        "B) Unauthorized, unmonitored deployment or usage of AI tools by employees within an organization",
+                        "C) An invisible agent background service",
+                        "D) An antivirus software"
+                    ]
+                },
+                correctIndex: 1,
+                explanation: {
+                    ar: "الذكاء الاصطناعي الخفي (Shadow AI) هو استخدام الموظفين لأدوات وتطبيقات الذكاء الاصطناعي الخارجية دون علم أو موافقة قسم إدارات تكنولوجيا المعلومات والأمن، مما قد يعرض البيانات الحساسة للتسريب.",
+                    en: "Shadow AI refers to the usage of unsanctioned AI software/services by employees without IT security oversight, posing severe data privacy and security risks."
+                },
+                topic: {
+                    ar: "مخاطر الذكاء الاصطناعي الخفي (Shadow AI)",
+                    en: "Shadow AI Risks"
+                }
+            },
+            {
+                id: 4,
+                title: {
+                    ar: "ما مفهوم «حاكماً ومُشرّعاً» (AI Governance) في بيئة العمل؟",
+                    en: "What is the concept of AI Governance ('Governor & Legislator') in business environments?"
+                },
+                options: {
+                    ar: [
+                        "أ) استخدام الذكاء الاصطناعي في الألعاب فقط",
+                        "ب) الإطار التنظيمي والسياسات التي تضمن استخدام الذكاء الاصطناعي بمسؤولية، وأمان، وامتثال للقوانين",
+                        "ج) استبدال الموظفين بالكامل",
+                        "د) منع استخدام الحواسيب"
+                    ],
+                    en: [
+                        "A) Using AI for gaming only",
+                        "B) The framework of policies, compliance rules, and ethical boundaries governing responsible AI usage",
+                        "C) Replacing all human employees",
+                        "D) Banning computer usage"
+                    ]
+                },
+                correctIndex: 1,
+                explanation: {
+                    ar: "حوكمة الذكاء الاصطناعي (AI Governance) تعني وضع اللوائح، والسياسات الأمنية، وأطر المسؤولية الاجتماعية والقانونية التي تُنظم كيفية استخدام نماذج ووكلاء الذكاء الاصطناعي داخل المنشآت لحماية البيانات وضمان الامتثال.",
+                    en: "AI Governance defines operational policies, data protection guidelines, legal compliance standards, and risk mitigation strategies for enterprise deployment."
+                },
+                topic: {
+                    ar: "حوكمة الذكاء الاصطناعي (AI Governance)",
+                    en: "AI Governance & Compliance"
+                }
+            },
+            {
+                id: 5,
+                title: {
+                    ar: "ما المقصود بـ«Artificial Stupidity» في سياق الذكاء الاصطناعي؟",
+                    en: "What is meant by 'Artificial Stupidity' in AI context?"
+                },
+                options: {
+                    ar: [
+                        "أ) تعطل الخادم بشكل كامل",
+                        "ب) إخفاقات أو هلوسات وإجابات خاطئة تصدر من الأنظمة بسبب ضعف السياق أو سوء بناء التوجيهات",
+                        "ج) لغة برمجة قديمة",
+                        "د) حاسوب لا يعمل بالطاقة"
+                    ],
+                    en: [
+                        "A) Complete server crash",
+                        "B) AI failures, absurd answers, or hallucinations caused by poor prompting, weak context, or unconstrained models",
+                        "C) An old programming language",
+                        "D) A turned-off computer"
+                    ]
+                },
+                correctIndex: 1,
+                explanation: {
+                    ar: "مصطلح 'Artificial Stupidity' يُطلق على السلوكيات غير المنطقية، أو الإجابات الهزلية، أو الهلوسة الناتجة عن إخفاقات هندسة السياق والأوامر في الوكيل، حيث يتعامل مع الطلبات بشكل خالي من المنطق الفعلي رغم قوته الإحصائية.",
+                    en: "'Artificial Stupidity' describes instances where advanced LLMs produce completely nonsensical or wrong outputs due to flawed context, bad prompts, or unhandled edge cases."
+                },
+                topic: {
+                    ar: "ظاهرة الهلوسة والغباء الاصطناعي",
+                    en: "Artificial Stupidity & Hallucination"
+                }
+            },
+            {
+                id: 6,
+                title: {
+                    ar: "كم عدد أركان هندسة الذكاء الاصطناعي التي عرضتها الورشة لبناء الوكيل؟",
+                    en: "How many core engineering pillars for building AI agents were presented in the workshop?"
+                },
+                options: {
+                    ar: [
+                        "أ) ركنان اثنين",
+                        "ب) ثلاثة أركان",
+                        "ج) أربعة أركان (Prompt, Context, Loop, Harness)",
+                        "د) عشرة أركان"
+                    ],
+                    en: [
+                        "A) 2 Pillars",
+                        "B) 3 Pillars",
+                        "C) 4 Core Pillars (Prompt, Context, Loop, Harness)",
+                        "D) 10 Pillars"
+                    ]
+                },
+                correctIndex: 2,
+                explanation: {
+                    ar: "حددت الورشة أربعة أركان برمجية وهندسية رئيسية لبناء الوكلاء الذكيين: هندسة الأوامر (Prompt)، هندسة السياق (Context)، هندسة حلقة التنفيذ (Loop)، وهندسة بيئة التحكم والحاضن (Harness).",
+                    en: "The workshop identified 4 fundamental architectural pillars for agent development: Prompt, Context, Loop, and Harness."
+                },
+                topic: {
+                    ar: "أركان بناء الوكلاء الأربعة",
+                    en: "The 4 Core Agent Pillars"
+                }
+            },
+            {
+                id: 7,
+                title: {
+                    ar: "ما الركن الأساسي الذي يُحدد للوكيل «من هو وما دوره وما القيود المطلوبة منه»؟",
+                    en: "Which core pillar defines 'who the agent is, its role, persona, and strict constraints'?"
+                },
+                options: {
+                    ar: [
+                        "أ) هندسة الأوامر (Prompt Engineering)",
+                        "ب) هندسة السياق (Context Engineering)",
+                        "ج) هندسة الحاضن (Harness Engineering)",
+                        "د) هندسة تدفق المهام (Graph Engineering)"
+                    ],
+                    en: [
+                        "A) Prompt Engineering",
+                        "B) Context Engineering",
+                        "C) Harness Engineering",
+                        "D) Graph Engineering"
+                    ]
+                },
+                correctIndex: 0,
+                explanation: {
+                    ar: "هندسة الأوامر (Prompt Engineering) تُمثّل الركن التوجيهي الأساسي الذي يحدد هويّة الوكيل (System Prompt)، وشخصيته، ومسؤولياته، والأسلوب اللغوي المتبع، والقيود الصارمة التي يتعين عليه الالتزام بها أثناء معالجة أي طلب.",
+                    en: "Prompt Engineering shapes the foundational identity (System Prompt), persona, boundary instructions, and core behavior guidelines of an AI Agent."
+                },
+                topic: {
+                    ar: "أركان الهندسة: الأوامر والهوية (Prompt Pillar)",
+                    en: "Prompt Engineering Pillar"
+                }
+            },
+            {
+                id: 8,
+                title: {
+                    ar: "بأي صيغة تُحفظ «مهارات الوكيل» (Skills) لرفعها إليه لاحقًا؟",
+                    en: "In what file format are 'Agent Skills' stored for later upload?"
+                },
+                options: {
+                    ar: [
+                        "أ) PDF",
+                        "ب) Excel",
+                        "ج) صورة PNG",
+                        "د) Markdown (MD)"
+                    ],
+                    en: [
+                        "A) PDF",
+                        "B) Excel",
+                        "C) PNG Image",
+                        "D) Markdown (MD)"
+                    ]
+                },
+                correctIndex: 3,
+                explanation: {
+                    ar: "تُحفظ المهارات (Skills) وتُكتب عادةً بصيغة النص المنسق Markdown (.md)؛ لكونها صيغة نصية خفيفة، سهلة القراءة والمعالجة بواسطة نماذج الذكاء الاصطناعي والوكلاء (AI Agents)، وتتيح تنظيم التعليمات والأوامر البرمجية والتعليمات الهيكلية بشكل واضح ودقيق.",
+                    en: "Agent Skills are maintained in Markdown (.md) format. It provides lightweight, human-readable, and machine-parseable formatting ideal for structuring agent instructions and prompt specifications."
+                },
+                topic: {
+                    ar: "صيغة المهارات وتوثيقها (Skill Specifications)",
+                    en: "Skill File Formats"
+                }
+            },
+            {
+                id: 9,
+                title: {
+                    ar: "أيّ مما يلي ليس من التخصصات الهندسية الخمس التي عرضتها الورشة؟",
+                    en: "Which of the following is NOT one of the 5 specialized engineering disciplines discussed in the workshop?"
+                },
+                options: {
+                    ar: [
+                        "أ) هندسة الأوامر (Prompt Engineering)",
+                        "ب) هندسة السياق (Context Engineering)",
+                        "ج) هندسة الواجهات (Interface Engineering)",
+                        "د) هندسة حلقة التنفيذ (Loop Engineering)"
+                    ],
+                    en: [
+                        "A) Prompt Engineering",
+                        "B) Context Engineering",
+                        "C) Interface Engineering",
+                        "D) Loop Engineering"
+                    ]
+                },
+                correctIndex: 2,
+                explanation: {
+                    ar: "تركز تخصصات وهندسة الذكاء الاصطناعي الحديثة وتطوير التطبيقات والوكلاء الذكيّة على مفاهيم مثل هندسة الأوامر (Prompt Engineering)، وهندسة السياق (Context Engineering)، وهندسة حلقة التنفيذ (Loop Engineering)، بينما تُعتبر هندسة الواجهات تخصصاً تقليدياً مرتبطاً بتطوير واجهات المستخدم (UI/UX) في هندسة البرمجيات وليست ضمن الركائز الأساسية المستحدثة لهندسة الذكاء الاصطناعي التي نوقشت في الورشة.",
+                    en: "Interface Engineering is a classic frontend software development term. The AI agent engineering domain focuses on Prompt, Context, Loop, Harness, and Graph engineering."
+                },
+                topic: {
+                    ar: "ركائز هندسة الذكاء الاصطناعي",
+                    en: "AI Engineering Foundations"
+                }
+            },
+            {
+                id: 10,
+                title: {
+                    ar: "ما وظيفة «هندسة السياق» في بناء الوكيل؟",
+                    en: "What is the function of 'Context Engineering' in agent development?"
+                },
+                options: {
+                    ar: [
+                        "أ) تصميم شعار الوكيل",
+                        "ب) تنظيم المعلومات والبيانات والذاكرة والمعرفة التي يحتاجها الوكيل لفهم مهمته",
+                        "ج) زيادة سرعة الإنترنت",
+                        "د) كتابة الكود بلغة بايثون"
+                    ],
+                    en: [
+                        "A) Designing the agent's logo",
+                        "B) Organizing knowledge, memory, vector databases, and relevant background data needed for task execution",
+                        "C) Increasing internet connection speed",
+                        "D) Writing raw Python code"
+                    ]
+                },
+                correctIndex: 1,
+                explanation: {
+                    ar: "تُعنى هندسة السياق (Context Engineering) بتنظيم وإدارة وتصميم تدفق المعلومات والبيانات والتعليمات (بما في ذلك الذاكرة، وخلفية المعرفة، وملفات السياق) التي يتلقاها نموذج الذكاء الاصطناعي أو الوكيل، مما يضمن تزويده بالمعلومات الدقيقة والملائمة في كل خطوة لأداء مهمته بفعالية وكفاءة عالية.",
+                    en: "Context Engineering focuses on structuring long-term & short-term memory, dynamic retrieval (RAG), and data injection to ensure the model receives concise, relevant information."
+                },
+                topic: {
+                    ar: "أركان الهندسة: السياق والذاكرة (Context Pillar)",
+                    en: "Context Engineering Pillar"
+                }
+            },
+            {
+                id: 11,
+                title: {
+                    ar: "ما المقصود بـ«هندسة بيئة التشغيل والتحكم» (Harness Engineering)؟",
+                    en: "What is meant by 'Harness Engineering'?"
+                },
+                options: {
+                    ar: [
+                        "أ) تهيئة البيئة المحيطة بالوكيل: الأدوات والصلاحيات والقيود وآليات المراقبة والتحقق",
+                        "ب) تصميم لوحة المؤشرات النهائية",
+                        "ج) اختيار اسم الوكيل",
+                        "د) ترجمة الأوامر إلى العربية"
+                    ],
+                    en: [
+                        "A) Structuring the surrounding agent environment: tools, permissions, security guardrails, logging, and evaluation",
+                        "B) Designing final dashboard charts",
+                        "C) Choosing the agent's nickname",
+                        "D) Translating prompts to Arabic"
+                    ]
+                },
+                correctIndex: 0,
+                explanation: {
+                    ar: "تُشير «هندسة بيئة التشغيل والتحكم» (Harness Engineering) إلى بناء الإطار أو الحاضن البرمجي والأمني المحيط بالوكيل الذكي (AI Agent)، والذي يتضمن تحديد الصلاحيات، وتوفير الأدوات (Tools)، وفرض القيود وضوابط الأمان، فضلاً عن آليات المراقبة والتتبع والتصحيح (Debugging and Monitoring) لضمان أداء الوكيل لمهامه بكفاءة وثبات وأمان تام.",
+                    en: "Harness Engineering involves creating the runtime environment, safety guards, sandbox boundaries, tool interfaces, monitoring telemetry, and verification systems that enclose the agent."
+                },
+                topic: {
+                    ar: "أركان الهندسة: الحاضن والتحكم (Harness Pillar)",
+                    en: "Harness Engineering Pillar"
+                }
+            },
+            {
+                id: 12,
+                title: {
+                    ar: "ما «هندسة حلقة التنفيذ» (Loop Engineering)؟",
+                    en: "What is 'Loop Engineering'?"
+                },
+                options: {
+                    ar: [
+                        "أ) تكرار السؤال نفسه على النموذج حتى يجيب",
+                        "ب) ربط الوكيل بأكثر من نموذج لغوي",
+                        "ج) حذف المحادثات القديمة",
+                        "د) دورة عمل متكررة يخطط فيها الوكيل وينفذ ويراجع النتائج ويصحح الأخطاء حتى يحقق الهدف أو يصل إلى شرط التوقف"
+                    ],
+                    en: [
+                        "A) Repeating the exact same prompt until an answer appears",
+                        "B) Connecting an agent to multiple LLMs simultaneously",
+                        "C) Deleting older conversation logs",
+                        "D) An iterative execution loop where the agent plans, executes, evaluates results, and self-corrects until completion"
+                    ]
+                },
+                correctIndex: 3,
+                explanation: {
+                    ar: "تُعنى هندسة حلقة التنفيذ (Loop Engineering) بتصميم دورات العمل التكرارية (Iterative Loops) للوكلاء الذكية، حيث لا تقتصر مهمة الوكيل على تقديم إجابة واحدة فحسب، بل يخطط للخطوات، وينفذها، ويقيّم المخرجات، ويقوم بالتصحيح الذاتي للأخطاء بشكل مستمر (مثل حلقة التخطيط والتنفيذ والمراجعة) حتى ينجز المهمة بكفاءة تامة أو يتحقق شرط التوقف المحدد.",
+                    en: "Loop Engineering structures iterative execution cycles (ReAct loops) allowing agents to plan, invoke tools, inspect responses, self-correct errors, and stop when objectives are satisfied."
+                },
+                topic: {
+                    ar: "أركان الهندسة: حلقة التنفيذ (Loop Pillar)",
+                    en: "Loop Engineering Pillar"
+                }
+            },
+            {
+                id: 13,
+                title: {
+                    ar: "متى تبرز الحاجة إلى «هندسة تدفق المهام» (Graph Engineering)؟",
+                    en: "When does the need for 'Graph Engineering' arise?"
+                },
+                options: {
+                    ar: [
+                        "أ) عند كتابة أمر واحد قصير",
+                        "ب) عند تصميم صورة للوكيل",
+                        "ج) عند العمل بأكثر من وكيل وتنظيم المهام والمسارات والتنسيق بينها وبين الأدوات",
+                        "د) عند استخدام الهاتف بدل الحاسوب"
+                    ],
+                    en: [
+                        "A) When writing a short simple prompt",
+                        "B) When designing an avatar image for an agent",
+                        "C) When orchestrating multi-agent systems, complex branching workflows, and state synchronization",
+                        "D) When using mobile devices instead of desktop"
+                    ]
+                },
+                correctIndex: 2,
+                explanation: {
+                    ar: "تبرز الحاجة إلى «هندسة تدفق المهام» (Graph Engineering) أو تصميم المخططات البيانية لتدفق العمل (مثل استخدام أدوات كـ LangGraph) عندما تكون الأنظمة الذكية أكثر تعقيدًا وتتطلب تنسيقًا بين عدة وكلاء ذكيين، وتوجيه المسارات بناءً على الشروط والمخرجات، وإدارة الحالات والبيانات المتبادلة بين الأدوات المختلفة لضمان إنجاز المهام المتشعبة بكفاءة عالية.",
+                    en: "Graph Engineering (e.g. LangGraph) becomes essential when managing complex multi-agent architectures requiring conditional branching, state management, cyclical retry paths, and tool routing."
+                },
+                topic: {
+                    ar: "هندسة التدفق (Graph Engineering)",
+                    en: "Graph Engineering & Workflow Routing"
+                }
+            },
+            {
+                id: 14,
+                title: {
+                    ar: "في نظام الوكلاء المتعددين (Multi-Agent) الذي وُصف في الورشة، ما دور «مدير الوكلاء»؟",
+                    en: "In a Multi-Agent system, what is the role of the 'Agent Manager / Orchestrator'?"
+                },
+                options: {
+                    ar: [
+                        "أ) يدير العملية وينسّق عمل الوكلاء الآخرين",
+                        "ب) يجمع البيانات فقط",
+                        "ج) يرسم الرسوم البيانية فقط",
+                        "د) يحذف الوكلاء غير المستخدمين"
+                    ],
+                    en: [
+                        "A) Manages the workflow and coordinates the execution of sub-agents",
+                        "B) Only collects raw data",
+                        "C) Only draws visual graphs",
+                        "D) Deletes unused agents"
+                    ]
+                },
+                correctIndex: 0,
+                explanation: {
+                    ar: "يُعتبر «مدير الوكلاء» (Agent Manager أو Orchestrator) العنصر التنسيقي الأساسي في نظام الوكلاء المتعددين؛ حيث يتولى إدارة تدفق العمل، وتقسيم المهام الكبيرة وتوزيعها على الوكلاء المتخصصين، ومتابعة مخرجاتهم وربطها معًا ببعضها لضمان تحقيق الهدف النهائي للنظام بكفاءة وتناغم تام.",
+                    en: "The Agent Manager (Orchestrator) governs the overall workflow. It decomposes high-level goals, assigns sub-tasks to specialized worker agents, synthesizes outputs, and ensures seamless execution."
+                },
+                topic: {
+                    ar: "أنظمة الوكلاء المتعددين (Multi-Agent Systems)",
+                    en: "Multi-Agent Orchestration"
+                }
+            },
+            {
+                id: 15,
+                title: {
+                    ar: "ما الفرق بين API وMCP كما شرحته الورشة؟",
+                    en: "What is the difference between API and MCP as explained in the workshop?"
+                },
+                options: {
+                    ar: [
+                        "أ) لا فرق بينهما",
+                        "ب) API تربط الأنظمة ببعضها، وMCP تربط نماذج الذكاء الاصطناعي بالأدوات ومصادر البيانات بطريقة موحدة",
+                        "ج) MCP أقدم من API",
+                        "د) API خاصة بالهواتف وMCP خاصة بالحواسيب"
+                    ],
+                    en: [
+                        "A) No difference between them",
+                        "B) API connects traditional systems, while MCP connects AI models to tools and data sources in a standardized protocol",
+                        "C) MCP is older than API",
+                        "D) API is mobile-only and MCP is PC-only"
+                    ]
+                },
+                correctIndex: 1,
+                explanation: {
+                    ar: "تُستخدم واجهات برمجة التطبيقات التقليدية (API) لربط الأنظمة والبرمجيات ببعضها مبرمجياً، في حين يُعد بروتوكول سياق النموذج (MCP - Model Context Protocol) معيارًا حديثًا مصمم خصيصًا لربط نماذج الذكاء الاصطناعي والوكلاء الذكيين بالأدوات، والملفات، ومصادر البيانات بطريقة موحدة ومرنة لتسهيل تفاعلها مع البيئة المحيطة.",
+                    en: "APIs connect traditional application services. MCP (Model Context Protocol) is an open standard specifically engineered to connect AI models seamlessly to context, tools, and databases."
+                },
+                topic: {
+                    ar: "معايير الربط والتكامل (MCP Protocol)",
+                    en: "Integration Protocols (API vs MCP)"
+                }
+            },
+            {
+                id: 16,
+                title: {
+                    ar: "هل يُلغي بروتوكول MCP الحاجة إلى API؟",
+                    en: "Does Model Context Protocol (MCP) eliminate the need for APIs?"
+                },
+                options: {
+                    ar: [
+                        "أ) نعم، لم تعد API مستخدمة",
+                        "ب) نعم، لكن في المؤسسات الكبيرة فقط",
+                        "ج) لا، لأن MCP خاص بالصور",
+                        "د) لا، فقد تُستخدم API داخليًّا لتوفير الأدوات للوكيل"
+                    ],
+                    en: [
+                        "A) Yes, APIs are obsolete",
+                        "B) Yes, but only in enterprise environments",
+                        "C) No, because MCP is for images only",
+                        "D) No, APIs are still used under the hood to provide internal agent tools"
+                    ]
+                },
+                correctIndex: 3,
+                explanation: {
+                    ar: "بروتوكول سياق النموذج (MCP) لا يلغي واجهات برمجة التطبيقات (APIs)، بل يُمثّل طبقة توحيد معيارية فوقها لتسهيل تواصل نماذج الذكاء الاصطناعي مع الأدوات ومصادر البيانات. وتستمر الـ APIs في أداء دورها الأساسي (سواء داخليًا أو خارجيًا) في بناء وتوفير الخدمات والبيانات التي يستدعيها الوكيل أو يتفاعل معها.",
+                    en: "MCP does not replace APIs; it acts as a standardized communication layer on top of them. APIs continue to power back-end systems and external integrations that MCP connects to agents."
+                },
+                topic: {
+                    ar: "التكامل والتكامل المعياري (MCP vs API)",
+                    en: "MCP & API Coexistence"
+                }
+            },
+            {
+                id: 17,
+                title: {
+                    ar: "إن أردت بناء وكيل في مجال لست متخصصًا فيه، فما الحل الذي اقترحته الورشة؟",
+                    en: "If you want to build an agent in a domain outside your expertise, what solution was recommended?"
+                },
+                options: {
+                    ar: [
+                        "أ) التوقف عن المحاولة",
+                        "ب) نسخ وكيل جاهز دون تعديل",
+                        "ج) سؤال نموذج الذكاء الاصطناعي عن مهارات المتخصص في هذا المجال وتجهيزها مهاراتٍ للوكيل",
+                        "د) الاكتفاء بروبوت المحادثة"
+                    ],
+                    en: [
+                        "A) Stop trying",
+                        "B) Copy a ready-made agent without adjustments",
+                        "C) Ask AI to extract domain expert skills & structure them as skills for the agent",
+                        "D) Settle for a basic Chatbot"
+                    ]
+                },
+                correctIndex: 2,
+                explanation: {
+                    ar: "عندما تفتقر إلى الخبرة التخصصية في مجال معين لبناء وكيل ذكي، تتيح لك نماذج الذكاء الاصطناعي استخلاص وتحديد الدور المطلوب، والمهارات الأساسية، والسياسات والخطوات التي يتبعها الخبير البشري في ذلك المجال، ثم صيغتها وتجهيزها كملفات مهارات (Skills) أو تعليمات سياقية (Context Instructions) لتدريب الوكيل وتوجيهه بدقة.",
+                    en: "You can prompt an LLM to outline the key workflows, rules, and procedures of a domain specialist, then package those insights into Skill files (.md) for your agent."
+                },
+                topic: {
+                    ar: "صياغة مهارات المجالات التخصصية",
+                    en: "Domain Skill Extraction"
+                }
+            },
+            {
+                id: 18,
+                title: {
+                    ar: "ماذا تفعل عندما تكتب لنموذج الذكاء الاصطناعي «أريد أن أتعلم … بأسلوب Study and Learn»؟",
+                    en: "What happens when you prompt an AI with 'I want to learn ... using Study and Learn style'?"
+                },
+                options: {
+                    ar: [
+                        "أ) تطلب منه إجراء اختبار نهائي",
+                        "ب) تطلب منه خارطة طريق متدرجة لتعلّم المهارة",
+                        "ج) تطلب منه كتابة الكود نيابة عنك",
+                        "د) تطلب منه ترجمة النص"
+                    ],
+                    en: [
+                        "A) Asking for a final quiz right away",
+                        "B) Requesting a step-by-step learning roadmap to master the skill",
+                        "C) Asking it to write the entire code for you",
+                        "D) Asking it to translate text"
+                    ]
+                },
+                correctIndex: 1,
+                explanation: {
+                    ar: "يُقصد بأسلوب 'Study and Learn' توجيه نموذج الذكاء الاصطناعي ليلعب دور المعلم أو الموجه الذكي؛ حيث يضع لك خطة أو خارطة طريق متدرجة ومنهجية (Roadmap) تفصيلية لمساعدتك على فهم الموضوع واكتساب المهارة خطوة بخطوة، مع الشرح والمتابعة، بدلاً من مجرد إعطائك الحلول أو الأكواد الجاهزة.",
+                    en: "'Study and Learn' mode prompts the AI to act as an interactive tutor, providing a structured, step-by-step roadmap to guide your learning instead of simply providing direct answers."
+                },
+                topic: {
+                    ar: "منهجية التعلم والتطوير (Study and Learn)",
+                    en: "Study and Learn Methodology"
+                }
+            },
+            {
+                id: 19,
+                title: {
+                    ar: "ما النصيحة التي قدمتها الورشة بشأن صلاحيات الوكيل؟",
+                    en: "What advice was given regarding Agent Permissions?"
+                },
+                options: {
+                    ar: [
+                        "أ) أن تكون الصلاحيات محددة ومقيدة، لا مفتوحة",
+                        "ب) أن تكون الصلاحيات مفتوحة لتسريع العمل",
+                        "ج) ألا يُمنح الوكيل أي أداة",
+                        "د) أن يحدد الوكيل صلاحياته بنفسه"
+                    ],
+                    en: [
+                        "A) Permissions should be strictly defined and limited (Least Privilege), not open",
+                        "B) Permissions should be fully open to speed up execution",
+                        "C) The agent should not be given any tools at all",
+                        "D) The agent should determine its own permissions"
+                    ]
+                },
+                correctIndex: 0,
+                explanation: {
+                    ar: "تقتضي أفضل الممارسات في بناء ومحوكمة الوكلاء الذكيين (Agent Security & Governance) تطبيق مبدأ «الحد الأدنى من الصلاحيات» (Least Privilege)، بحيث يُمنح الوكيل الوصول للأدوات والبيانات الضرورية فقط لأداء مهمته، لتجنب الأخطاء التشغيلية، ومخاطر الأمن السيبراني، وسوء التجميع أو التصرف غير المقصود.",
+                    en: "Best governance practices dictate applying the principle of 'Least Privilege'. An agent should only access tools and data required for its specific mission to prevent security breaches and unwanted actions."
+                },
+                topic: {
+                    ar: "محوكمة وأمان الوكلاء (Agent Governance)",
+                    en: "Agent Governance & Least Privilege"
+                }
+            },
+            {
+                id: 20,
+                title: {
+                    ar: "ما المرحلة التي يجب ألا يُنشر الوكيل قبلها؟",
+                    en: "What stage must an AI Agent complete before deployment?"
+                },
+                options: {
+                    ar: [
+                        "أ) تغيير اسم الوكيل",
+                        "ب) شراء نطاق إلكتروني",
+                        "ج) الاختبار والتحقق من عمله",
+                        "د) ترجمة واجهته"
+                    ],
+                    en: [
+                        "A) Changing the agent name",
+                        "B) Purchasing a domain name",
+                        "C) Evaluation and Testing / Validation",
+                        "D) Translating its UI"
+                    ]
+                },
+                correctIndex: 2,
+                explanation: {
+                    ar: "مرحلة الاختبار والتحقق (Evaluation & Validation) هي الخطوة الأكثر أهمية وحرجًا قبل إطلاق ونشر أي وكيل ذكي (AI Agent) في البيئة التشغيلية؛ وذلك للتأكد من دقة مخرجاته، وسلامة اتخاذ القرارات، ومراعاة الضوابط الأمنية والصلاحيات المحددة، وضمان عدم حدوث أخطاء أو هلوسات قد تؤثر على سير العمل.",
+                    en: "Evaluation & Validation is the most critical phase before deploying an AI agent. It ensures output accuracy, decision safety, security policy compliance, and prevents hallucinations or operational failures."
+                },
+                topic: {
+                    ar: "دورة حياة واختبار الوكلاء (Agent Testing)",
+                    en: "Agent Testing & Deployment Lifecycle"
+                }
+            }
+        ];
+
+        // UI State Variables
+        let currentLang = 'ar';
+        let currentTheme = 'dark';
+        let allExpanded = false;
+
+        // Render Questions Function
+        function renderQuestions() {
+            const container = document.getElementById('questionsContainer');
+            container.innerHTML = '';
+
+            quizData.forEach((item) => {
+                const isArabic = currentLang === 'ar';
+                const questionText = isArabic ? item.title.ar : item.title.en;
+                const options = isArabic ? item.options.ar : item.options.en;
+                const explanation = isArabic ? item.explanation.ar : item.explanation.en;
+                const topic = isArabic ? item.topic.ar : item.topic.en;
+
+                const cardHTML = `
+                    <div class="bg-craft-dirt dark:bg-stone-900 border-4 border-black p-5 sm:p-6 shadow-xl relative transition-all duration-200">
+                        
+                        <!-- Top Metadata Bar -->
+                        <div class="flex flex-wrap items-center justify-between gap-2 mb-4 border-b-2 border-stone-700 pb-3">
+                            <span class="pixel-font bg-yellow-400 text-black px-3 py-1 text-xs font-bold border border-black shadow">
+                                ${isArabic ? `سؤال ${item.id}` : `Q${item.id}`}
+                            </span>
+                            <span class="text-xs font-bold text-emerald-400 bg-emerald-950/80 px-3 py-1 border border-emerald-600">
+                                <i class="fa-solid fa-bookmark text-yellow-400 mr-1"></i> ${topic}
+                            </span>
+                        </div>
+
+                        <!-- Question Title -->
+                        <h3 class="text-lg sm:text-xl font-bold text-white mb-5 leading-relaxed">
+                            ${questionText}
+                        </h3>
+
+                        <!-- Options Grid -->
+                        <div class="grid grid-cols-1 gap-3 mb-6">
+                            ${options.map((opt, optIdx) => {
+                                const isCorrect = optIdx === item.correctIndex;
+                                return `
+                                    <div class="p-3.5 text-sm sm:text-base font-semibold border-2 transition-all duration-150 flex items-center justify-between ${
+                                        isCorrect 
+                                        ? 'bg-craft-grass/90 border-green-400 text-white shadow-lg translate-x-1' 
+                                        : 'bg-stone-800/60 border-stone-700 text-stone-300 opacity-80'
+                                    }">
+                                        <span>${opt}</span>
+                                        ${isCorrect ? `
+                                            <span class="bg-yellow-400 text-black text-xs font-black px-2.5 py-1 uppercase tracking-wider border border-black flex items-center gap-1">
+                                                <i class="fa-solid fa-check"></i> ${isArabic ? 'الإجابة الصحيحة' : 'Correct'}
+                                            </span>
+                                        ` : ''}
+                                    </div>
+                                `;
+                            }).join('')}
+                        </div>
+
+                        <!-- Explanation Collapsible Accordion -->
+                        <div class="border-t-2 border-dashed border-stone-700 pt-4">
+                            <button onclick="toggleAccordion(${item.id})" class="pixel-btn bg-craft-stone hover:bg-stone-600 text-white font-bold text-xs sm:text-sm py-2 px-4 flex items-center gap-2">
+                                <span id="accIcon-${item.id}" class="text-yellow-300 font-bold text-base">+</span>
+                                <span id="accText-${item.id}">${isArabic ? 'الشرح' : 'Explanation'}</span>
+                            </button>
+
+                            <div id="accContent-${item.id}" class="accordion-content mt-3">
+                                <div class="bg-stone-950/90 border-2 border-yellow-500/40 p-4 text-stone-200 text-sm leading-relaxed relative">
+                                    <div class="flex items-center gap-2 text-yellow-400 font-bold mb-2">
+                                        <i class="fa-solid fa-lightbulb"></i>
+                                        <span>${isArabic ? 'توضيح ومفهوم هندسي:' : 'Explanation & Engineering Insight:'}</span>
+                                    </div>
+                                    <p>${explanation}</p>
+                                </div>
+                            </div>
+                        </div>
+
+                    </div>
+                `;
+                container.innerHTML += cardHTML;
+            });
+        }
+
+        // Toggle Accordion Action with Minecraft Sound Effect
+        function toggleAccordion(id) {
+            const content = document.getElementById(`accContent-${id}`);
+            const icon = document.getElementById(`accIcon-${id}`);
+            const isExpanding = !content.classList.contains('expanded');
+
+            playToggleSound(isExpanding);
+
+            if (isExpanding) {
+                content.classList.add('expanded');
+                icon.innerText = '-';
+            } else {
+                content.classList.remove('expanded');
+                icon.innerText = '+';
+            }
+        }
+
+        // Toggle All Explanations
+        function toggleAllExplanations() {
+            allExpanded = !allExpanded;
+            const isArabic = currentLang === 'ar';
+            
+            quizData.forEach(item => {
+                const content = document.getElementById(`accContent-${item.id}`);
+                const icon = document.getElementById(`accIcon-${item.id}`);
+                if (allExpanded) {
+                    content.classList.add('expanded');
+                    icon.innerText = '-';
+                } else {
+                    content.classList.remove('expanded');
+                    icon.innerText = '+';
+                }
+            });
+
+            document.getElementById('toggleAllText').innerText = allExpanded 
+                ? (isArabic ? 'إغلاق جميع الشروحات' : 'Collapse All') 
+                : (isArabic ? 'فتح جميع الشروحات' : 'Expand All');
+        }
+
+        // Toggle Language Action
+        function toggleLanguage() {
+            currentLang = currentLang === 'ar' ? 'en' : 'ar';
+            const html = document.documentElement;
+            
+            if (currentLang === 'en') {
+                html.setAttribute('lang', 'en');
+                html.setAttribute('dir', 'ltr');
+                document.getElementById('langText').innerText = 'العربية';
+                document.getElementById('subHeading').innerText = 'AI Agent Engineering & Skills Handbook';
+                document.getElementById('mainTitle').innerText = 'AI Agent Design & Evaluation Quiz Codex';
+                document.getElementById('mainDesc').innerText = 'Explore all 20 questions in their exact sequential order with model answers. Click "Explanation +" to inspect deeper engineering insights!';
+                document.getElementById('statusBadge').innerText = 'Workshop Achievement';
+                document.getElementById('countBadge').innerText = '20 Interactive Quiz Items';
+                document.getElementById('toggleAllText').innerText = allExpanded ? 'Collapse All' : 'Expand All';
+                document.getElementById('footerCraftText').innerText = 'Crafted with passion by Abdullah Al-Manama ⛏️';
+            } else {
+                html.setAttribute('lang', 'ar');
+                html.setAttribute('dir', 'rtl');
+                document.getElementById('langText').innerText = 'English';
+                document.getElementById('subHeading').innerText = 'موسوعة مهارات وهندسة وكلاء الذكاء الاصطناعي';
+                document.getElementById('mainTitle').innerText = 'دليل اختبار وتصميم وكلاء الذكاء الاصطناعي (AI Agents)';
+                document.getElementById('mainDesc').innerText = 'تصفح الأسئلة الـ 20 بالترتيب الصحيح مع الإجابات النموذجية الشاملة. يمكنك النقر على خيار "الشرح +" لعرض المفهوم التوضيحي بالتفصيل!';
+                document.getElementById('statusBadge').innerText = 'إنجاز الورشة';
+                document.getElementById('countBadge').innerText = '20 سؤال تفاعلي';
+                document.getElementById('toggleAllText').innerText = allExpanded ? 'إغلاق جميع الشروحات' : 'فتح جميع الشروحات';
+                document.getElementById('footerCraftText').innerText = 'صُنع بعناية وإتقان بواسطة عبدالله محمد أحمد المناعمه ⛏️';
+            }
+
+            renderQuestions();
+        }
+
+        // Toggle Dark/Light Theme Action
+        function toggleTheme() {
+            const html = document.documentElement;
+            const themeIcon = document.getElementById('themeIcon');
+            const themeText = document.getElementById('themeText');
+
+            if (html.classList.contains('dark')) {
+                html.classList.remove('dark');
+                currentTheme = 'light';
+                themeIcon.className = 'fa-solid fa-sun text-yellow-500';
+                themeText.innerText = 'Light';
+                document.body.className = 'bg-stone-300 text-stone-900 min-h-screen transition-colors duration-300 antialiased pb-16 crafting-bg-light';
+            } else {
+                html.classList.add('dark');
+                currentTheme = 'dark';
+                themeIcon.className = 'fa-solid fa-moon text-yellow-200';
+                themeText.innerText = 'Dark';
+                document.body.className = 'bg-craft-stoneDark dark:bg-craft-bedrock text-stone-900 dark:text-stone-100 min-h-screen transition-colors duration-300 antialiased pb-16 crafting-bg-dark';
+            }
+        }
+
+        // Initial Initialization on Window Load with Minecraft Splash Screen
+        window.onload = function() {
+            document.body.className = 'bg-craft-bedrock text-stone-100 min-h-screen transition-colors duration-300 antialiased pb-16 crafting-bg-dark';
+            renderQuestions();
+
+            // Fade out Minecraft Splash Screen after 2 seconds
+            setTimeout(() => {
+                const splash = document.getElementById('loadingScreen');
+                if (splash) {
+                    splash.style.opacity = '0';
+                    setTimeout(() => splash.remove(), 500);
+                }
+            }, 2000);
+        };
+    </script>
+</body>
+</html>
